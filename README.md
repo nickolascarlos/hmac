@@ -2,7 +2,7 @@
 Implementação "hash-agnostic" de um gerador e autenticador de HMAC
 
 Algoritmo escrito em conformidade com o descrito pelo artigo [Message Authentication using Hash Functions — The
-HMAC Construction]<https://cseweb.ucsd.edu//~mihir/papers/hmac-cb.pdf>
+HMAC Construction](https://cseweb.ucsd.edu//~mihir/papers/hmac-cb.pdf)
 
 ## Esquema do algoritmo implementado
 
