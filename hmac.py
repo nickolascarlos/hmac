@@ -1,6 +1,7 @@
 # Algoritmo escrito de acordo com <https://cseweb.ucsd.edu//~mihir/papers/hmac-cb.pdf>
 
 import hashlib
+from typing import Callable, Union
 
 from hashaux import HashingMode, EncodingType
 
@@ -11,7 +12,7 @@ OUTER = 2
 
 class HMAC:
 
-    def __init__(self, K: str, H):
+    def __init__(self, K: str, H: Callable):
         self.key = HMAC.generate_key(K)
         self.hashfunc = H
 
@@ -20,8 +21,9 @@ class HMAC:
     #   K = chave
     #   Text = mensagem
     #   H = função de hashing
-    def generate(self, Text: str) -> bytes:
-        Text: bytes = bytes(Text, ENCODING) # Converte a mensagem em bytes        
+    def generate(self, Text: Union[str, bytes]) -> bytes:
+        if type(Text) == str:
+            Text: bytes = bytes(Text, ENCODING) # Converte a mensagem em bytes        
         inner_hash: bytes = self.hashfunc(HMAC.xor_key(INNER, self.key) + Text, HashingMode.B2B, EncodingType.LATIN1)
         return self.hashfunc(HMAC.xor_key(OUTER, self.key) + inner_hash, HashingMode.B2B, EncodingType.LATIN1)
 
@@ -29,6 +31,18 @@ class HMAC:
     def verify(self, Text: str, expected_hash: bytes) -> bool:
         return self.generate(Text) == expected_hash
 
+    # Gera um "pacote" de bytes contendo a mensagem e sua hash, separadas por um byte 0x00:
+    # bytes(mensagem) || 0x00 || bytes(hash)
+    def generate_pack(self, Text: str) -> bytes:
+        encoded_text = bytes(Text, ENCODING)
+        message_hash = self.generate(Text)
+        return encoded_text + bytes([0]) + message_hash
+    
+    # Verifica o "pacote" formado pela mensagem e pela hash
+    def verify_pack(self, pack: bytes) -> bool:
+        Text, expected_hash = pack.split(b'\x00')
+        return self.generate(Text) == expected_hash
+        
     # Função para facilitar o pré-processamento da chave
     # Retorna a sequência de bytes codificados
     @staticmethod
