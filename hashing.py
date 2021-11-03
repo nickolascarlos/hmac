@@ -1,5 +1,6 @@
 from typing import Union
 from hashaux import g_hash, HashingMode, EncodingType
+import hashlib
 
 
 
