@@ -13,7 +13,7 @@ OUTER = 2
 class HMAC:
 
     def __init__(self, K: str, H: Callable):
-        self.key = HMAC.generate_key(K)
+        self.key = HMAC.resize_key(K)
         self.hashfunc = H
 
     # Função para a geração do HMAC de uma mensagem
@@ -42,12 +42,6 @@ class HMAC:
     def verify_pack(self, pack: bytes) -> bool:
         Text, expected_hash = pack.split(b'\x00')
         return self.generate(Text) == expected_hash
-        
-    # Função para facilitar o pré-processamento da chave
-    # Retorna a sequência de bytes codificados
-    @staticmethod
-    def generate_key(key: str) -> bytes:
-        return bytes(HMAC.resize_key(key), ENCODING)
 
     # Retorna key acrescida de quantos 0's forem necessários
     # para se completarem 64 caracteres, conforme especificado
@@ -55,10 +49,10 @@ class HMAC:
     @staticmethod
     def resize_key(key: str) -> str:
         # O artigo em que esse script foi baseado não define uma abordagem
-        # clara para quando a chave tem mais de 64 caracteres
+        # clara para quando a chave tiver mais de 64 caracteres
         if len(key) > 64: raise Exception('key size must be less or equal to 64')
         number_of_zeros_to_append = 64 - len(key)
-        return key + "0" * number_of_zeros_to_append
+        return bytes(key, ENCODING) + bytes([0]) * number_of_zeros_to_append
 
     # Função para realizar o xor entre a chave e (ipad ou opad)
     # Parâmetros:
